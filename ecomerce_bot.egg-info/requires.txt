@@ -1,4 +1,0 @@
-requests
-beautifulsoup4
-langchain
-langchain_astradb
