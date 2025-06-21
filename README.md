@@ -5,6 +5,8 @@
 _Empowering Support, Elevating Customer Experiences Instantly_
 
 ![last-commit](https://img.shields.io/github/last-commit/nikhil550000/customer_support_system?style=flat&logo=git&logoColor=white&color=0080ff)
+![repo-top-language](https://img.shields.io/github/languages/top/nikhil550000/customer_support_system?style=flat&color=0080ff)
+![repo-language-count](https://img.shields.io/github/languages/count/nikhil550000/customer_support_system?style=flat&color=0080ff)
 
 _Built with the tools and technologies:_
 ![AstraDB](https://img.shields.io/badge/AstraDB-00A1E4.svg?style=flat&logo=AstraDB&logoColor=white)
