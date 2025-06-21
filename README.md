@@ -5,12 +5,9 @@
 _Empowering Support, Elevating Customer Experiences Instantly_
 
 ![last-commit](https://img.shields.io/github/last-commit/nikhil550000/customer_support_system?style=flat&logo=git&logoColor=white&color=0080ff)
-![repo-top-language](https://img.shields.io/github/languages/top/nikhil550000/customer_support_system?style=flat&color=0080ff)
-![repo-language-count](https://img.shields.io/github/languages/count/nikhil550000/customer_support_system?style=flat&color=0080ff)
 
 _Built with the tools and technologies:_
-
-![Markdown](https://img.shields.io/badge/Markdown-000000.svg?style=flat&logo=Markdown&logoColor=white)
+![AstraDB](https://img.shields.io/badge/AstraDB-00A1E4.svg?style=flat&logo=AstraDB&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688.svg?style=flat&logo=FastAPI&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-1C3C3C.svg?style=flat&logo=LangChain&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED.svg?style=flat&logo=Docker&logoColor=white)
@@ -121,4 +118,3 @@ License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 <div align="left"> <a href="#top">⬆ Return</a> </div>
-```
