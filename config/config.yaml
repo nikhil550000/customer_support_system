@@ -1,0 +1,18 @@
+astra_db:
+  collection_name: "rag_customer"
+# Configuration file for the Astra DB connection
+
+
+embedding_model:
+  provider: "google"
+  model_name: "models/text-embedding-004"
+
+
+
+retriever:
+  top_k: 3
+
+
+llm:
+  provider: "google"
+  model_name: "gemini-2.5-pro"
