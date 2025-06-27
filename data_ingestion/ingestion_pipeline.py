@@ -47,7 +47,8 @@ class DataIngestion:
         Get path to the CSV file located inside 'data' folder.
         """
         current_dir = os.getcwd()
-        csv_path = os.path.join(current_dir, 'data', 'data.csv')
+        #csv_path = os.path.join(current_dir, 'data', 'data.csv')
+        csv_path = "/home/nikhilg/Desktop/CUSTOMER_SUPPORT_SYSTEM/data/data.csv"
 
         if not os.path.exists(csv_path):
             raise FileNotFoundError(f"CSV file not found at: {csv_path}")
