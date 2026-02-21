@@ -1,12 +1,19 @@
 import os
+import time
 import pandas as pd
 from dotenv import load_dotenv
-from typing import List, Tuple
+from typing import List
 from langchain_core.documents import Document
 from langchain_astradb import AstraDBVectorStore
 from utils.model_loader import ModelLoader
 from utils.config_loader import load_config
+from langchain_pinecone import PineconeVectorStore
+from pinecone import ServerlessSpec,Pinecone
+from uuid import uuid4
 
+BATCH_SIZE = 20        # documents per batch (well under the 100/min free-tier limit)
+BATCH_DELAY = 65       # seconds to wait between batches for quota reset
+MAX_RETRIES = 5        # max retries per batch on rate-limit errors
 class DataIngestion:
     """
     Class to handle data transformation and ingestion into AstraDB vector store.
@@ -29,7 +36,7 @@ class DataIngestion:
         """
         load_dotenv()
         
-        required_vars = ["GOOGLE_API_KEY", "ASTRA_DB_API_ENDPOINT", "ASTRA_DB_APPLICATION_TOKEN", "ASTRA_DB_KEYSPACE"]
+        required_vars = ["GOOGLE_API_KEY", "ASTRA_DB_API_ENDPOINT", "ASTRA_DB_APPLICATION_TOKEN", "ASTRA_DB_KEYSPACE","PINECONE_API_KEY"]
         
         missing_vars = [var for var in required_vars if os.getenv(var) is None]
         if missing_vars:
@@ -39,6 +46,7 @@ class DataIngestion:
         self.db_api_endpoint = os.getenv("ASTRA_DB_API_ENDPOINT")
         self.db_application_token = os.getenv("ASTRA_DB_APPLICATION_TOKEN")
         self.db_keyspace = os.getenv("ASTRA_DB_KEYSPACE")
+        self.pine_cone_api_key = os.getenv("PINECONE_API_KEY")
 
        
 
@@ -48,7 +56,7 @@ class DataIngestion:
         """
         current_dir = os.getcwd()
         #csv_path = os.path.join(current_dir, 'data', 'data.csv')
-        csv_path = "/home/nikhilg/Desktop/CUSTOMER_SUPPORT_SYSTEM/data/data.csv"
+        csv_path = "data/data.csv"
 
         if not os.path.exists(csv_path):
             raise FileNotFoundError(f"CSV file not found at: {csv_path}")
@@ -97,20 +105,66 @@ class DataIngestion:
 
     def store_in_vector_db(self, documents: List[Document]):
         """
-        Store documents into AstraDB vector store.
+        Store documents into AstraDB vector store in batches to avoid rate limits.
         """
-        collection_name=self.config["astra_db"]["collection_name"]
-        vstore = AstraDBVectorStore(
-            embedding= self.model_loader.load_embeddings(),
-            collection_name=collection_name,
-            api_endpoint=self.db_api_endpoint,
-            token=self.db_application_token,
-            namespace=self.db_keyspace,
-        )
+        try:
+            collection_name=self.config["astra_db"]["collection_name"]
+            vstore = AstraDBVectorStore(
+                embedding=self.model_loader.load_embeddings(),
+                collection_name=collection_name,
+                api_endpoint=self.db_api_endpoint,
+                token=self.db_application_token,
+                namespace=self.db_keyspace,
+            )
+        except Exception as e:
+            # Fallback to Pinecone if AstraDB connection fails
+            print(f"AstraDB connection failed with error: {e}. Falling back to Pinecone.")
+            pinecone = Pinecone(api_key=self.pine_cone_api_key)
+            index_name=self.config["pinecone"]["index_name"]
+            if index_name not in pinecone.list_indexes():
+                pinecone.create_index(
+                    name=index_name,
+                    dimension=768,  
+                    serverless_spec=ServerlessSpec(min_nodes=1, max_nodes=3)
+                )
+            vstore = PineconeVectorStore(
+                index_name=index_name,
+                embedding=self.model_loader.load_embeddings(),
+            )
 
-        inserted_ids = vstore.add_documents(documents)
-        print(f"Successfully inserted {len(inserted_ids)} documents into AstraDB.")
-        return vstore, inserted_ids
+        # --- Batch insertion with retry to respect free-tier rate limits ---
+        all_inserted_ids = []
+        total = len(documents)
+        total_batches = (total + BATCH_SIZE - 1) // BATCH_SIZE
+
+        for i in range(0, total, BATCH_SIZE):
+            batch = documents[i : i + BATCH_SIZE]
+            batch_num = i // BATCH_SIZE + 1
+
+            for attempt in range(1, MAX_RETRIES + 1):
+                try:
+                    print(f"Inserting batch {batch_num}/{total_batches}  ({len(batch)} docs)  [attempt {attempt}]...")
+                    inserted_ids = vstore.add_documents(batch)
+                    all_inserted_ids.extend(inserted_ids)
+                    break  # success — exit retry loop
+                except Exception as e:
+                    if "429" in str(e) or "ResourceExhausted" in str(e) or "quota" in str(e).lower():
+                        wait = BATCH_DELAY * attempt  # exponential-ish backoff
+                        print(f"  ⚠ Rate limited on batch {batch_num}. Waiting {wait}s before retry {attempt}/{MAX_RETRIES}...")
+                        time.sleep(wait)
+                    else:
+                        raise  # re-raise non-rate-limit errors
+            else:
+                # All retries exhausted for this batch
+                print(f"  ✗ Failed to insert batch {batch_num} after {MAX_RETRIES} retries. Skipping.")
+
+            # Wait between batches (skip wait after the last batch)
+            if i + BATCH_SIZE < total:
+                print(f"Waiting {BATCH_DELAY}s to respect rate limits...")
+                time.sleep(BATCH_DELAY)
+
+        print(f"Successfully inserted {len(all_inserted_ids)} documents into vector store.")
+        return vstore, all_inserted_ids
 
     def run_pipeline(self):
         """
