@@ -1,0 +1,117 @@
+{
+  "timestamp": "2026-02-21T18:29:34.385017",
+  "num_tests": 5,
+  "avg_retrieval_score": 0.55,
+  "avg_answer_score": 0.7,
+  "results": [
+    {
+      "question": "Can you suggest good budget laptops?",
+      "retrieval": {
+        "num_docs_retrieved": 3,
+        "keyword_overlap_score": 0.25,
+        "keywords_found": [
+          "price"
+        ],
+        "keywords_missed": [
+          "laptop",
+          "budget",
+          "affordable"
+        ]
+      },
+      "answer": {
+        "is_non_empty": true,
+        "answer_keyword_score": 0.5,
+        "has_specific_info": true,
+        "is_redirected": null,
+        "answer_length": 313
+      },
+      "raw_answer": "I'm happy to help with product-related questions, but I don't have any information on laptops in the provided review data. However, I can suggest that you check our website for a list of budget laptops. If you have any questions about the products we currently have available, I'd be happy to help you with those."
+    },
+    {
+      "question": "What do customers say about battery life of phones?",
+      "retrieval": {
+        "num_docs_retrieved": 3,
+        "keyword_overlap_score": 0.25,
+        "keywords_found": [
+          "battery"
+        ],
+        "keywords_missed": [
+          "phone",
+          "hours",
+          "charge"
+        ]
+      },
+      "answer": {
+        "is_non_empty": true,
+        "answer_keyword_score": 0.5,
+        "has_specific_info": true,
+        "is_redirected": null,
+        "answer_length": 300
+      },
+      "raw_answer": "Unfortunately, the provided review data doesn't mention customer opinions about battery life of phones. It only talks about battery backup of the headsets mentioned, such as the OnePlus Bullets Wireless Z Bass Edition and realme Buds Wireless. If you'd like to know about those, I can help with that."
+    },
+    {
+      "question": "Tell me about the best rated headphones",
+      "retrieval": {
+        "num_docs_retrieved": 3,
+        "keyword_overlap_score": 0.75,
+        "keywords_found": [
+          "headphone",
+          "sound",
+          "quality"
+        ],
+        "keywords_missed": [
+          "rating"
+        ]
+      },
+      "answer": {
+        "is_non_empty": true,
+        "answer_keyword_score": 1.0,
+        "has_specific_info": true,
+        "is_redirected": null,
+        "answer_length": 364
+      },
+      "raw_answer": "Based on the reviews, the OnePlus Bullets Wireless Z Bass Edition Bluetooth Headset has a 5-star rating and is highly praised for its sound quality and battery life. The realme Buds 2 Wired Headset also has a 5-star rating and is considered one of the best headphones, although it's mentioned that its bass is less compared to another model, the Boat Basshead 225."
+    },
+    {
+      "question": "What is the capital of France?",
+      "retrieval": {
+        "num_docs_retrieved": 3,
+        "keyword_overlap_score": 1.0,
+        "keywords_found": [],
+        "keywords_missed": []
+      },
+      "answer": {
+        "is_non_empty": true,
+        "answer_keyword_score": 1.0,
+        "has_specific_info": true,
+        "is_redirected": true,
+        "answer_length": 177
+      },
+      "raw_answer": "I'm happy to help you with product-related questions. However, the capital of France is not related to our platform. Could you please ask a question about a product on our site?"
+    },
+    {
+      "question": "Are there any complaints about delivery?",
+      "retrieval": {
+        "num_docs_retrieved": 3,
+        "keyword_overlap_score": 0.5,
+        "keywords_found": [
+          "delivery",
+          "delay"
+        ],
+        "keywords_missed": [
+          "shipping",
+          "late"
+        ]
+      },
+      "answer": {
+        "is_non_empty": true,
+        "answer_keyword_score": 0.5,
+        "has_specific_info": true,
+        "is_redirected": null,
+        "answer_length": 227
+      },
+      "raw_answer": "Yes, one customer mentioned being \"very happy with the delivery\" and received the product in just two days. However, another customer had a bad experience, but it's not clear if it was related to delivery or the product itself."
+    }
+  ]
+}
