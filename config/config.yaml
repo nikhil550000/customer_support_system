@@ -5,7 +5,7 @@ astra_db:
 
 embedding_model:
   provider: "google"
-  model_name: "models/text-embedding-004"
+  model_name: "models/gemini-embedding-001"
 
 
 
@@ -13,6 +13,13 @@ retriever:
   top_k: 3
 
 
+# llm:
+#   provider: "google"
+#   model_name: "gemini-2.5-flash"
+
 llm:
-  provider: "google"
-  model_name: "gemini-2.5-flash"
+  provider: "groq"
+  model_name: "llama-3.1-8b-instant"
+
+pinecone:
+  index_name: "customer-support-index"
