@@ -1,122 +1,99 @@
-<div align="center">
+# Product Support Chatbot (RAG)
 
-# CUSTOMER_SUPPORT_SYSTEM
+A retrieval-augmented generation (RAG) chatbot that answers customer queries about products using real review data. Built with LangChain, FastAPI, AstraDB, and Groq.
 
-_Empowering Support, Elevating Customer Experiences Instantly_
+## Architecture
 
-![last-commit](https://img.shields.io/github/last-commit/nikhil550000/customer_support_system?style=flat&logo=git&logoColor=white&color=0080ff)
-![repo-top-language](https://img.shields.io/github/languages/top/nikhil550000/customer_support_system?style=flat&color=0080ff)
-![repo-language-count](https://img.shields.io/github/languages/count/nikhil550000/customer_support_system?style=flat&color=0080ff)
+```
+User Query → FastAPI → Conversation History (in-memory)
+                            ↓
+                     LangChain LCEL Chain
+                            ├── Retriever (AstraDB vector search + relevance filtering)
+                            ├── Prompt Template (grounded, multi-turn aware)
+                            └── LLM (Llama 3.1 8B via Groq)
+                            ↓
+                     Response → Evaluation (offline scoring)
+```
 
-_Built with the tools and technologies:_
-![AstraDB](https://img.shields.io/badge/AstraDB-00A1E4.svg?style=flat&logo=AstraDB&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688.svg?style=flat&logo=FastAPI&logoColor=white)
-![LangChain](https://img.shields.io/badge/LangChain-1C3C3C.svg?style=flat&logo=LangChain&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED.svg?style=flat&logo=Docker&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3776AB.svg?style=flat&logo=Python&logoColor=white)
-![pandas](https://img.shields.io/badge/pandas-150458.svg?style=flat&logo=pandas&logoColor=white)
-![YAML](https://img.shields.io/badge/YAML-CB171E.svg?style=flat&logo=YAML&logoColor=white)
+## Tech Stack
 
-</div>
+| Component | Technology |
+|---|---|
+| Backend | FastAPI + Uvicorn |
+| LLM Orchestration | LangChain (LCEL) |
+| Embeddings | Google Gemini Embedding 001 |
+| Vector Store | DataStax AstraDB |
+| LLM | Llama 3.1 8B (via Groq) |
+| Frontend | HTML/CSS/jQuery |
+| Data | Flipkart product reviews (450 entries) |
 
-<br>
+## Key Features
 
----
+- **Multi-turn conversation** — Sliding window history so users can ask follow-up questions naturally
+- **Retrieval confidence scoring** — Filters low-relevance documents before passing to LLM, reducing hallucination
+- **Prompt grounding** — LLM is strictly instructed to use only retrieved context
+- **Offline evaluation** — Automated test suite that scores retrieval relevance and answer quality across test cases
+- **Batched ingestion** — Rate-limit aware data pipeline with exponential backoff for free-tier APIs
 
-## Table of Contents
+## Project Structure
 
-- [Overview](#overview)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
+```
+├── main.py                          # FastAPI app, chain setup, conversation memory
+├── data_ingestion/
+│   └── ingestion_pipeline.py        # CSV → Documents → AstraDB (batched with retry)
+├── Retriever/
+│   └── retrieval.py                 # Vector store retriever + confidence scoring
+├── evaluation/
+│   └── evaluate.py                  # Offline RAG quality evaluation
+├── utils/
+│   ├── config_loader.py             # YAML config reader
+│   └── model_loader.py              # Embedding + LLM loader (singleton)
+├── prompt_library/
+│   └── prompt.py                    # Grounded prompt templates
+├── config/
+│   └── config.yaml                  # Model names, DB settings, top_k
+├── templates/
+│   └── chat.html                    # Chat UI
+├── static/
+│   └── style.css                    # Styles
+└── data/
+    └── data.csv                     # Product reviews dataset
+```
 
----
+## Setup
 
-## Overview
-
-Customer Support System is an end-to-end platform that enables developers to build intelligent, AI-powered customer support chatbots with ease. It integrates natural language processing, semantic retrieval, and customizable prompts within a scalable architecture.
-
-**Why customer_support_system?**
-
-This project simplifies deploying and maintaining AI-driven customer support solutions. The core features include:
-
-- 🔧 **Modular Architecture:** Seamlessly connect retrieval, prompt templating, and language model invocation for flexible customization.
-- 💻 **Web Interface:** An intuitive front-end for real-time user interactions with the chatbot.
-- 🗃️ **Semantic Retrieval:** Connects to AstraDB for efficient, context-aware data fetching.
-- 📦 **Deployment Ready:** Dockerized environment and streamlined setup with requirements and configuration management.
-- 📝 **Data Pipelines:** Supports ingestion and processing of customer support data and product reviews for enhanced insights.
-
----
-
-## Getting Started
-
-### Prerequisites
-
-This project requires the following dependencies:
-
-- **Python 3.10**
-- **Conda** (for environment management)
-- **FastAPI**
-- **Jupyter Notebook** (for data analysis and model development)
-
-### Installation
-
-1. **Clone the repository:**
-
-````sh
+```bash
 git clone https://github.com/nikhil550000/customer_support_system
 cd customer_support_system
 
-
-```sh
-git clone https://github.com/nikhil550000/customer_support_system
-cd customer_support_system
-
-
-Create and activate a Conda environment:
-```sh
-conda create -p env python=3.10 -y
-conda activate env
-````
-
-Install the required packages:
-
-```sh
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
+
+cp .env.example .env
+# Edit .env with your AstraDB, Google, Groq keys
+
+# Ingest data
+python data_ingestion/ingestion_pipeline.py
+
+# Run
+uvicorn main:app --reload --port 8000
+
+# Evaluate (optional)
+python evaluation/evaluate.py
 ```
 
-Usage
-Run the FastAPI application:
+## Evaluation
 
-```sh
-uvicorn main:app --reload --port 8001
+```bash
+python evaluation/evaluate.py
 ```
 
-Then navigate to http://localhost:8001 in your browser to access the web interface.
+Outputs `evaluation/eval_results.json` with per-query retrieval relevance scores, answer keyword overlap, and out-of-scope rejection checks.
 
-Project Structure
-Code
-customer_support_system/
-├── notebooks/ # Jupyter notebooks for data analysis and model training
-│ ├── data_processing.ipynb # Data preprocessing and feature engineering
-│ ├── model_training.ipynb # Model development and evaluation
-│ └── ...
-├── app/ # FastAPI application
-│ ├── routers/ # API endpoints
-│ ├── models/ # Data models
-│ └── services/ # Business logic
-├── data/ # Data files
-├── main.py # Application entry point
-├── requirements.txt # Python dependencies
-└── README.md # Project documentation
-Contributing
-Contributions are welcome! Please feel free to submit a Pull Request.
+## Key Design Decisions
 
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-<div align="left"> <a href="#top">⬆ Return</a> </div>
+- **Groq (Llama 3.1 8B)** — fast inference at zero cost vs. Gemini/OpenAI
+- **Relevance threshold filtering** — documents below similarity threshold are discarded before prompting
+- **In-memory conversation store** — simple for demo; would use Redis with TTL in production
+- **Batched ingestion with backoff** — stays within free-tier rate limits reliably
